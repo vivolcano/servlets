@@ -1,39 +1,48 @@
 package ru.netology.repository;
+
+import org.springframework.stereotype.Repository;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
 public class PostRepository {
-  private final List<Post> posts = new CopyOnWriteArrayList<>();
-  private final AtomicLong nextPostId = new AtomicLong(1L);
+
+  private final Map<Long, Post> posts;
+
+  public PostRepository() {
+    this.posts = new ConcurrentHashMap<>(){};
+  }
 
   public List<Post> all() {
-    return posts;
+    List<Post> postsList = new ArrayList<>();
+    for (Map.Entry<Long, Post> entry : posts.entrySet())
+      postsList.add(entry.getValue());
+    return postsList;
   }
 
   public Optional<Post> getById(long id) {
-    return posts.stream()
-            .filter(post -> post.getId() == id)
-            .findFirst();
+    return Optional.ofNullable(posts.get(id));
   }
 
   public Post save(Post post) {
-    if (post.getId() == 0L) {
-      post.setId(nextPostId.getAndIncrement());
-      posts.add(post);
-      return post;
-    } else {
-      final Post oldPost = getById(post.getId()).orElseThrow(NotFoundException::new);
-      oldPost.setContent(post.getContent());
-      return oldPost;
+    if (post.getId() == 0) {
+      var newId = (long) posts.size() + 1;
+      while (posts.containsKey(newId)) newId++;
+      post.setId(newId);
     }
+    posts.put(post.getId(), post);
+    return post;
   }
 
   public void removeById(long id) {
-    posts.removeIf(post -> post.getId() == id);
+    if (!posts.containsKey(id))
+      throw new NotFoundException();
+    posts.remove(id);
   }
 }
