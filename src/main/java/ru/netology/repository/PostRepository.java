@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class PostRepository {
@@ -29,13 +30,18 @@ public class PostRepository {
       throw new NotFoundException();
     }
     
-    if (post.getId() == 0 {
+    if (post.getId() == 0) {
       var newId = counter.incrementAndGet();
-      post.setId(newId)
+      post.setId(newId);
     }
         
-    posts.put(post.getId(), post)
+    posts.put(post.getId(), post);
         return post;
-    
+  }
+
+  public void removeById(long id) {
+    if (!posts.containsKey(id))
+      throw new NotFoundException();
+    posts.remove(id);
   }
 }
