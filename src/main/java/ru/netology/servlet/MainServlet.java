@@ -1,6 +1,7 @@
 package ru.netology.servlet;
 
 import ru.netology.controller.PostController;
+import ru.netology.exception.NotFoundException;
 import ru.netology.repository.PostRepository;
 import ru.netology.service.PostService;
 
@@ -31,7 +32,7 @@ public class MainServlet extends HttpServlet {
       }
       if (method.equals("GET") && path.matches("/api/posts/\\d+")) {
         // easy way
-        final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
+        final var id = Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
         controller.getById(id, resp);
         return;
       }
@@ -41,10 +42,13 @@ public class MainServlet extends HttpServlet {
       }
       if (method.equals("DELETE") && path.matches("/api/posts/\\d+")) {
         // easy way
-        final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
+        final var id = Long.parseLong(path.substring(path.lastIndexOf("/" ) + 1));
         controller.removeById(id, resp);
         return;
       }
+      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    } catch (NotFoundException e) {
+      e.printStackTrace();
       resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
     } catch (Exception e) {
       e.printStackTrace();
