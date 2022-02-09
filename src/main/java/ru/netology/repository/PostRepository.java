@@ -13,17 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class PostRepository {
 
-  private final Map<Long, Post> posts;
-
-  public PostRepository() {
-    this.posts = new ConcurrentHashMap<>(){};
-  }
+  private final Map<Long, Post> posts = new ConcurrentHashMap<>(){};
+  private final AtomicLong counter = new AtomicLong(0L);
 
   public List<Post> all() {
-    List<Post> postsList = new ArrayList<>();
-    for (Map.Entry<Long, Post> entry : posts.entrySet())
-      postsList.add(entry.getValue());
-    return postsList;
+    return new ArrayList<>(posts.values());
   }
 
   public Optional<Post> getById(long id) {
@@ -31,18 +25,17 @@ public class PostRepository {
   }
 
   public Post save(Post post) {
-    if (post.getId() == 0) {
-      var newId = (long) posts.size() + 1;
-      while (posts.containsKey(newId)) newId++;
-      post.setId(newId);
-    }
-    posts.put(post.getId(), post);
-    return post;
-  }
-
-  public void removeById(long id) {
-    if (!posts.containsKey(id))
+    if (post.getId() != 0 && !posts.containsKey(post.getId())) {
       throw new NotFoundException();
-    posts.remove(id);
+    }
+    
+    if (post.getId() == 0 {
+      var newId = counter.incrementAndGet();
+      post.setId(newId)
+    }
+        
+    posts.put(post.getId(), post)
+        return post;
+    
   }
 }
